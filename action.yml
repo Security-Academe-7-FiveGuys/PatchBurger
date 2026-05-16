@@ -4,8 +4,7 @@ description: "FiveGuys Security Scan API로 의존성 파일을 검사합니다.
 inputs:
   api-url:
     description: "FiveGuys /query/file-check API 주소"
-    required: false
-    default: "http://43.200.169.247:8081/query/file-check"
+    required: true
 
   deploy-on-risk:
     description: "WARNING 또는 CRITICAL 항목이 발견되어도 이후 workflow를 계속 진행할지 여부"

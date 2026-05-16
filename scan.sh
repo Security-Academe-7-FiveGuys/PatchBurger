@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-API_URL="${FIVEGUYS_API_URL:-http://43.200.169.247:8081/query/file-check}"
+API_URL="${FIVEGUYS_API_URL:-}"
 DEPLOY_ON_RISK="${FIVEGUYS_DEPLOY_ON_RISK:-false}"
 CUSTOM_DEPENDENCY_FILES="${FIVEGUYS_DEPENDENCY_FILES:-}"
 
@@ -12,19 +12,28 @@ print_section() {
   echo "========================================"
 }
 
-print_section "FiveGuys Security Scan 시작"
-echo "- API URL: $API_URL"
-echo "- 위험 항목 발견 시 배포 진행 여부: $DEPLOY_ON_RISK"
-
-rm -f files.json files.tmp request.json response.txt
-echo "[]" > files.json
-
 trim() {
   local value="$1"
   value="${value#"${value%%[![:space:]]*}"}"
   value="${value%"${value##*[![:space:]]}"}"
   printf '%s' "$value"
 }
+
+print_section "FiveGuys Security Scan 시작"
+echo "- 위험 항목 발견 시 배포 진행 여부: $DEPLOY_ON_RISK"
+
+if [ -z "$(trim "$API_URL")" ]; then
+  print_section "FiveGuys API URL 설정 오류"
+  echo "- api-url 입력값이 비어 있습니다."
+  echo "- GitHub Secrets에 API 주소를 저장한 뒤 workflow에서 api-url로 전달하세요."
+  echo "- 예시: api-url: \${{ secrets.FIVEGUYS_API_URL }}"
+  exit 1
+fi
+
+echo "- API URL: $API_URL"
+
+rm -f files.json files.tmp request.json response.txt
+echo "[]" > files.json
 
 add_file() {
   local path="$1"
