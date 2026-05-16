@@ -207,3 +207,7 @@ Use the major tag for normal usage:
 The `v1` tag points to the latest compatible v1 release.
 
 If strict reproducibility is required later, use a fixed release tag such as `v1.0.0`.
+
+## Test Scenarios
+
+See [TEST_SCENARIOS.md](./TEST_SCENARIOS.md) for the main verification scenarios.
