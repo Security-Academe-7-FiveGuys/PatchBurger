@@ -3,6 +3,7 @@ set -euo pipefail
 
 API_URL="${FIVEGUYS_API_URL:-http://43.200.169.247:8081/query/file-check}"
 DEPLOY_ON_RISK="${FIVEGUYS_DEPLOY_ON_RISK:-false}"
+CUSTOM_DEPENDENCY_FILES="${FIVEGUYS_DEPENDENCY_FILES:-}"
 
 print_section() {
   echo ""
@@ -17,6 +18,13 @@ echo "- 위험 항목 발견 시 배포 진행 여부: $DEPLOY_ON_RISK"
 
 rm -f files.json files.tmp request.json response.txt
 echo "[]" > files.json
+
+trim() {
+  local value="$1"
+  value="${value#"${value%%[![:space:]]*}"}"
+  value="${value%"${value##*[![:space:]]}"}"
+  printf '%s' "$value"
+}
 
 add_file() {
   local path="$1"
@@ -41,6 +49,36 @@ add_file() {
      }]' files.json > files.tmp
 
   mv files.tmp files.json
+}
+
+add_custom_file() {
+  local line="$1"
+  local path
+  local file_type
+  local ecosystem
+  local extra
+
+  IFS=':' read -r path file_type ecosystem extra <<< "$line"
+
+  path=$(trim "${path:-}")
+  file_type=$(trim "${file_type:-}")
+  ecosystem=$(trim "${ecosystem:-}")
+
+  if [ -z "$path" ] || [ -z "$file_type" ] || [ -z "$ecosystem" ] || [ -n "${extra:-}" ]; then
+    print_section "사용자 지정 의존성 파일 형식 오류"
+    echo "- 잘못된 입력: $line"
+    echo "- 올바른 형식: path:fileType:ecosystem"
+    echo "- 예시: frontend/custom-deps.json:package.json:npm"
+    exit 1
+  fi
+
+  if [ ! -f "$path" ]; then
+    print_section "사용자 지정 의존성 파일 없음"
+    echo "- 지정한 파일을 찾을 수 없습니다: $path"
+    exit 1
+  fi
+
+  add_file "$path" "$file_type" "$ecosystem"
 }
 
 print_error_response() {
@@ -111,15 +149,32 @@ print_results() {
 
 print_section "검사 대상 파일 탐색"
 
-add_file "package.json" "package.json" "npm"
-add_file "composer.json" "composer.json" "composer"
-add_file "go.mod" "go.mod" "go"
-add_file "pom.xml" "pom.xml" "maven"
-add_file "build.gradle" "build.gradle" "maven"
-add_file "build.gradle.kts" "build.gradle.kts" "maven"
-add_file "requirements.txt" "requirements.txt" "pip"
-add_file "pyproject.toml" "pyproject.toml" "pip"
-add_file "Cargo.toml" "Cargo.toml" "cargo"
+if [ -n "$(trim "$CUSTOM_DEPENDENCY_FILES")" ]; then
+  echo "- 사용자 지정 의존성 파일 모드"
+  echo "- 형식: path:fileType:ecosystem"
+
+  while IFS= read -r line || [ -n "$line" ]; do
+    line=$(trim "$line")
+
+    if [ -z "$line" ] || [ "${line#\#}" != "$line" ]; then
+      continue
+    fi
+
+    add_custom_file "$line"
+  done <<< "$CUSTOM_DEPENDENCY_FILES"
+else
+  echo "- 표준 의존성 파일 자동 탐색 모드"
+
+  add_file "package.json" "package.json" "npm"
+  add_file "composer.json" "composer.json" "composer"
+  add_file "go.mod" "go.mod" "go"
+  add_file "pom.xml" "pom.xml" "maven"
+  add_file "build.gradle" "build.gradle" "maven"
+  add_file "build.gradle.kts" "build.gradle.kts" "maven"
+  add_file "requirements.txt" "requirements.txt" "pip"
+  add_file "pyproject.toml" "pyproject.toml" "pip"
+  add_file "Cargo.toml" "Cargo.toml" "cargo"
+fi
 
 FILE_COUNT=$(jq 'length' files.json)
 
