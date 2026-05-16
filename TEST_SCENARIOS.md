@@ -1,21 +1,21 @@
-# FiveGuys Security Scan Action Test Scenarios
+# FiveGuys Security Scan Action 테스트 시나리오
 
-This document summarizes the main test scenarios for the FiveGuys Security Scan Action.
+이 문서는 FiveGuys Security Scan Action의 주요 동작을 검증하기 위한 테스트 시나리오를 정리한 문서입니다.
 
-## 1. Standard Dependency File Discovery
+## 1. 표준 의존성 파일 자동 탐색
 
-### Purpose
+### 목적
 
-Verify that the action automatically discovers standard dependency files.
+표준 의존성 파일명을 사용하는 경우 Action이 파일을 자동으로 탐색하는지 확인합니다.
 
-### Files
+### 테스트 파일
 
 ```text
 package.json
 pom.xml
 ```
 
-### Workflow
+### Workflow 설정
 
 ```yaml
 - uses: Security-Academe-7-FiveGuys/fiveguys-security-scan-action@v1
@@ -23,30 +23,30 @@ pom.xml
     deploy-on-risk: "false"
 ```
 
-### Expected Result
+### 기대 결과
 
 ```text
-- Standard dependency file discovery mode is used.
-- package.json is detected as fileType=package.json, ecosystem=npm.
-- pom.xml is detected as fileType=pom.xml, ecosystem=maven.
-- The FiveGuys API is called.
-- WARNING or CRITICAL results fail the workflow because deploy-on-risk is false.
+- 표준 의존성 파일 자동 탐색 모드가 사용됩니다.
+- package.json이 fileType=package.json, ecosystem=npm으로 인식됩니다.
+- pom.xml이 fileType=pom.xml, ecosystem=maven으로 인식됩니다.
+- FiveGuys API가 호출됩니다.
+- WARNING 또는 CRITICAL 결과가 있으면 deploy-on-risk=false 정책에 따라 workflow가 실패합니다.
 ```
 
-## 2. Custom Dependency File Mapping
+## 2. 사용자 지정 의존성 파일 매핑
 
-### Purpose
+### 목적
 
-Verify that custom-named dependency files can be scanned with `dependency-files`.
+표준 파일명이 아닌 의존성 파일도 `dependency-files` 옵션으로 검사할 수 있는지 확인합니다.
 
-### Files
+### 테스트 파일
 
 ```text
 custom-deps.json
 custom-pom.xml
 ```
 
-### Workflow
+### Workflow 설정
 
 ```yaml
 - uses: Security-Academe-7-FiveGuys/fiveguys-security-scan-action@v1
@@ -57,23 +57,23 @@ custom-pom.xml
       custom-pom.xml:pom.xml:maven
 ```
 
-### Expected Result
+### 기대 결과
 
 ```text
-- Custom dependency file mode is used.
-- custom-deps.json is sent as fileType=package.json, ecosystem=npm.
-- custom-pom.xml is sent as fileType=pom.xml, ecosystem=maven.
-- Automatic discovery is skipped.
-- The FiveGuys API is called.
+- 사용자 지정 의존성 파일 모드가 사용됩니다.
+- custom-deps.json이 fileType=package.json, ecosystem=npm으로 전달됩니다.
+- custom-pom.xml이 fileType=pom.xml, ecosystem=maven으로 전달됩니다.
+- 자동 탐색은 수행되지 않습니다.
+- FiveGuys API가 호출됩니다.
 ```
 
-## 3. Dependency File Limit
+## 3. 의존성 파일 3개 초과 차단
 
-### Purpose
+### 목적
 
-Verify that the action fails before calling the API when more than two dependency files are selected.
+선택된 의존성 파일이 3개 이상이면 API 호출 전에 Action이 실패하는지 확인합니다.
 
-### Files
+### 테스트 파일
 
 ```text
 custom-deps.json
@@ -81,7 +81,7 @@ custom-pom.xml
 custom-go.mod
 ```
 
-### Workflow
+### Workflow 설정
 
 ```yaml
 - uses: Security-Academe-7-FiveGuys/fiveguys-security-scan-action@v1
@@ -93,21 +93,21 @@ custom-go.mod
       custom-go.mod:go.mod:go
 ```
 
-### Expected Result
+### 기대 결과
 
 ```text
-- The action detects three dependency files.
-- The action fails before calling the FiveGuys API.
-- The log explains that only up to two dependency files are supported.
+- Action이 의존성 파일 3개를 감지합니다.
+- FiveGuys API를 호출하기 전에 실패합니다.
+- 로그에 최대 2개의 의존성 파일만 지원한다는 안내가 출력됩니다.
 ```
 
-## 4. Risky Result With Deployment Blocked
+## 4. deploy-on-risk=false 위험 항목 차단
 
-### Purpose
+### 목적
 
-Verify that risky scan results fail the workflow when `deploy-on-risk` is `false`.
+위험 항목이 발견되었을 때 `deploy-on-risk`가 `false`이면 workflow가 실패하는지 확인합니다.
 
-### Workflow
+### Workflow 설정
 
 ```yaml
 - uses: Security-Academe-7-FiveGuys/fiveguys-security-scan-action@v1
@@ -115,22 +115,22 @@ Verify that risky scan results fail the workflow when `deploy-on-risk` is `false
     deploy-on-risk: "false"
 ```
 
-### Expected Result
+### 기대 결과
 
 ```text
-- WARNING or CRITICAL results are printed.
-- The final deployment policy section shows deploy-on-risk=false.
-- The action exits with code 1.
-- Later deployment steps do not run.
+- WARNING 또는 CRITICAL 결과가 출력됩니다.
+- 최종 배포 옵션 판정 구간에 deploy-on-risk=false가 표시됩니다.
+- Action이 exit code 1로 종료됩니다.
+- 뒤에 배포 step이 있다면 실행되지 않습니다.
 ```
 
-## 5. Risky Result With Deployment Allowed
+## 5. deploy-on-risk=true 위험 항목 허용
 
-### Purpose
+### 목적
 
-Verify that risky scan results do not fail the workflow when `deploy-on-risk` is `true`.
+위험 항목이 발견되었더라도 `deploy-on-risk`가 `true`이면 workflow가 성공하는지 확인합니다.
 
-### Workflow
+### Workflow 설정
 
 ```yaml
 - uses: Security-Academe-7-FiveGuys/fiveguys-security-scan-action@v1
@@ -138,22 +138,24 @@ Verify that risky scan results do not fail the workflow when `deploy-on-risk` is
     deploy-on-risk: "true"
 ```
 
-### Expected Result
+### 기대 결과
 
 ```text
-- WARNING or CRITICAL results are printed.
-- The final deployment policy section shows deploy-on-risk=true.
-- The action exits with code 0.
-- Later deployment steps can run.
+- WARNING 또는 CRITICAL 결과가 출력됩니다.
+- 최종 배포 옵션 판정 구간에 deploy-on-risk=true가 표시됩니다.
+- Action이 exit code 0으로 종료됩니다.
+- 뒤에 배포 step이 있다면 실행될 수 있습니다.
 ```
 
-## 6. Silent Patch Detection
+## 6. Silent Patch 탐지
 
-### Purpose
+### 목적
 
-Verify that Silent Patch records stored in FiveGuys data are displayed in the action result.
+FiveGuys 데이터에 저장된 Silent Patch 의심 항목이 Action 결과에 표시되는지 확인합니다.
 
-### Example Dependencies
+### 예시 의존성
+
+`package.json` 또는 `custom-deps.json`:
 
 ```json
 {
@@ -163,6 +165,8 @@ Verify that Silent Patch records stored in FiveGuys data are displayed in the ac
 }
 ```
 
+`pom.xml` 또는 `custom-pom.xml`:
+
 ```xml
 <dependency>
     <groupId>com.test</groupId>
@@ -171,31 +175,31 @@ Verify that Silent Patch records stored in FiveGuys data are displayed in the ac
 </dependency>
 ```
 
-### Expected Result
+### 기대 결과
 
 ```text
-- Silent Patch results are printed in the "Silent Patch 탐지 결과" section.
-- The source is SILENT_PATCH.
-- The risk level is WARNING.
+- "Silent Patch 탐지 결과" 구간에 결과가 출력됩니다.
+- source는 SILENT_PATCH입니다.
+- riskLevel은 WARNING입니다.
 ```
 
-## 7. Invalid Custom Mapping Format
+## 7. dependency-files 형식 오류
 
-### Purpose
+### 목적
 
-Verify that invalid `dependency-files` entries fail with a clear message.
+`dependency-files` 옵션의 형식이 잘못되었을 때 명확한 오류 메시지가 출력되는지 확인합니다.
 
-### Workflow
+### Workflow 설정
 
 ```yaml
 dependency-files: |
   wrong-format
 ```
 
-### Expected Result
+### 기대 결과
 
 ```text
-- The action fails before calling the FiveGuys API.
-- The log shows the correct format: path:fileType:ecosystem.
-- Supported examples are printed.
+- FiveGuys API 호출 전에 실패합니다.
+- 로그에 올바른 형식인 path:fileType:ecosystem이 출력됩니다.
+- 지원 예시가 함께 출력됩니다.
 ```
