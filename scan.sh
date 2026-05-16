@@ -69,12 +69,24 @@ add_custom_file() {
     echo "- 잘못된 입력: $line"
     echo "- 올바른 형식: path:fileType:ecosystem"
     echo "- 예시: frontend/custom-deps.json:package.json:npm"
+    echo "- 지원 예시:"
+    echo "  - package.json:npm"
+    echo "  - pom.xml:maven"
+    echo "  - build.gradle:maven"
+    echo "  - build.gradle.kts:maven"
+    echo "  - requirements.txt:pip"
+    echo "  - pyproject.toml:pip"
+    echo "  - composer.json:composer"
+    echo "  - go.mod:go"
+    echo "  - Cargo.toml:cargo"
     exit 1
   fi
 
   if [ ! -f "$path" ]; then
     print_section "사용자 지정 의존성 파일 없음"
     echo "- 지정한 파일을 찾을 수 없습니다: $path"
+    echo "- dependency-files의 첫 번째 값은 checkout된 레포지토리 루트 기준 실제 파일 경로여야 합니다."
+    echo "- 예시: custom-deps.json:package.json:npm"
     exit 1
   fi
 
@@ -188,8 +200,9 @@ if [ "$FILE_COUNT" -gt 2 ]; then
   echo "- 발견된 의존성 파일 수: $FILE_COUNT"
   echo "- FiveGuys Security Scan은 현재 최대 2개의 의존성 파일만 검사할 수 있습니다."
   echo "- 일부 파일만 검사하면 누락 위험이 있으므로 검사를 중단합니다."
+  echo "- 해결 방법: 검사할 파일을 2개 이하로 줄이거나 dependency-files 옵션으로 검사 대상을 명시하세요."
   echo "- 검사 대상 파일:"
-  jq -r '.[] | "  - " + .path + " / ecosystem=" + .ecosystem' files.json
+  jq -r '.[] | "  - " + .path + " / fileType=" + .fileType + " / ecosystem=" + .ecosystem' files.json
   exit 1
 fi
 
