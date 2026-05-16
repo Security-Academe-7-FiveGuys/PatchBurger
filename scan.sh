@@ -11,14 +11,6 @@ print_section() {
   echo "========================================"
 }
 
-display_name_filter='
-  if $file.ecosystem == "maven" and ($result.name | contains(":")) then
-    ($result.name | split(":")[1])
-  else
-    $result.name
-  end
-'
-
 print_section "FiveGuys Security Scan 시작"
 echo "- API URL: $API_URL"
 echo "- 위험 항목 발견 시 배포 진행 여부: $DEPLOY_ON_RISK"
@@ -32,14 +24,6 @@ add_file() {
   local ecosystem="$3"
 
   if [ ! -f "$path" ]; then
-    return
-  fi
-
-  local count
-  count=$(jq 'length' files.json)
-
-  if [ "$count" -ge 2 ]; then
-    echo "- 제외됨: $path (최대 2개 파일 제한)"
     return
   fi
 
@@ -142,6 +126,16 @@ FILE_COUNT=$(jq 'length' files.json)
 if [ "$FILE_COUNT" -eq 0 ]; then
   echo "- 의존성 파일을 찾을 수 없습니다."
   exit 0
+fi
+
+if [ "$FILE_COUNT" -gt 2 ]; then
+  print_section "검사 대상 파일 개수 초과"
+  echo "- 발견된 의존성 파일 수: $FILE_COUNT"
+  echo "- FiveGuys Security Scan은 현재 최대 2개의 의존성 파일만 검사할 수 있습니다."
+  echo "- 일부 파일만 검사하면 누락 위험이 있으므로 검사를 중단합니다."
+  echo "- 검사 대상 파일:"
+  jq -r '.[] | "  - " + .path + " / ecosystem=" + .ecosystem' files.json
+  exit 1
 fi
 
 jq -n --slurpfile files files.json '{ files: $files[0] }' > request.json
