@@ -1,19 +1,19 @@
 name: "FiveGuys Security Scan"
-description: "Scan dependency files with the FiveGuys Security Scan API"
+description: "FiveGuys Security Scan API로 의존성 파일을 검사합니다."
 
 inputs:
   api-url:
-    description: "FiveGuys /query/file-check API URL"
+    description: "FiveGuys /query/file-check API 주소"
     required: false
     default: "http://43.200.169.247:8081/query/file-check"
 
   deploy-on-risk:
-    description: "Continue workflow even if WARNING or CRITICAL items are found"
+    description: "WARNING 또는 CRITICAL 항목이 발견되어도 이후 workflow를 계속 진행할지 여부"
     required: false
     default: "false"
 
   dependency-files:
-    description: "Custom dependency files. Format: path:fileType:ecosystem, one item per line"
+    description: "사용자 지정 의존성 파일 목록. 형식: path:fileType:ecosystem, 한 줄에 하나씩 입력"
     required: false
     default: ""
 

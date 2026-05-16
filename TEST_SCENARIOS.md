@@ -67,7 +67,7 @@ custom-pom.xml
 - FiveGuys API가 호출됩니다.
 ```
 
-## 3. 의존성 파일 3개 초과 차단
+## 3. 의존성 파일 3개 이상 차단
 
 ### 목적
 
@@ -202,4 +202,39 @@ dependency-files: |
 - FiveGuys API 호출 전에 실패합니다.
 - 로그에 올바른 형식인 path:fileType:ecosystem이 출력됩니다.
 - 지원 예시가 함께 출력됩니다.
+```
+
+## 8. 레포지토리에 의존성 파일이 3개 이상이지만 2개만 직접 지정
+
+### 목적
+
+레포지토리에 의존성 파일이 3개 이상 존재하더라도 `dependency-files`로 2개만 명시하면 지정된 파일만 검사되는지 확인합니다.
+
+### 테스트 파일
+
+```text
+package.json
+pom.xml
+go.mod
+```
+
+### Workflow 설정
+
+```yaml
+- uses: Security-Academe-7-FiveGuys/fiveguys-security-scan-action@v1
+  with:
+    deploy-on-risk: "false"
+    dependency-files: |
+      package.json:package.json:npm
+      pom.xml:pom.xml:maven
+```
+
+### 기대 결과
+
+```text
+- 사용자 지정 의존성 파일 모드가 사용됩니다.
+- 자동 탐색은 수행되지 않습니다.
+- package.json과 pom.xml만 검사 대상에 포함됩니다.
+- go.mod는 검사 대상에서 제외됩니다.
+- 선택된 파일 수가 2개이므로 FiveGuys API가 호출됩니다.
 ```

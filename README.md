@@ -70,9 +70,9 @@ jobs:
 
 | 이름 | 필수 여부 | 기본값 | 설명 |
 | --- | --- | --- | --- |
-| `api-url` | 아니오 | `http://43.200.169.247:8081/query/file-check` | FiveGuys `/query/file-check` API 주소 |
-| `deploy-on-risk` | 아니오 | `false` | WARNING 또는 CRITICAL 항목이 발견되어도 workflow를 계속 진행할지 여부 |
-| `dependency-files` | 아니오 | 빈 값 | 사용자 지정 의존성 파일 목록. 형식은 `path:fileType:ecosystem` |
+| `api-url` | 아니오 | `http://43.200.169.247:8081/query/file-check` | FiveGuys `/query/file-check` API 주소입니다. 기본 서버를 사용하지 않는 경우 직접 지정합니다. |
+| `deploy-on-risk` | 아니오 | `false` | 위험 항목 발견 시 이후 step을 계속 실행할지 결정합니다. `false`이면 WARNING/CRITICAL 발견 시 실패 처리하고, `true`이면 위험 항목이 있어도 성공 처리합니다. |
+| `dependency-files` | 아니오 | 빈 값 | 표준 파일명이 아닌 의존성 파일을 검사할 때 사용합니다. 형식은 `path:fileType:ecosystem`이며 여러 개는 줄바꿈으로 입력합니다. |
 
 ## deploy-on-risk 정책
 
@@ -110,14 +110,14 @@ jobs:
 
 이 Action은 한 번의 실행에서 최대 2개의 의존성 파일만 검사합니다.
 
-자동 탐색 모드에서 지원 의존성 파일이 3개 이상 발견되면, 일부 파일만 검사하지 않고 API 호출 전에 실패 처리합니다.
+자동 탐색 모드에서 지원 의존성 파일이 3개 이상 발견되면, 일부 파일만 임의로 검사하지 않고 API 호출 전에 실패 처리합니다.
 
 이 정책은 사용자가 일부 파일만 검사된 결과를 전체 의존성 파일이 검사된 것으로 오해하는 상황을 방지하기 위한 것입니다.
 
 해결 방법은 다음과 같습니다.
 
 - 레포지토리 내 검사 대상 의존성 파일을 2개 이하로 유지합니다.
-- `dependency-files` 옵션으로 검사할 파일을 최대 2개까지 명시합니다.
+- `dependency-files` 옵션으로 실제 검사할 파일을 최대 2개까지 명시합니다.
 
 ## 사용자 지정 의존성 파일
 

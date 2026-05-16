@@ -69,16 +69,16 @@ add_custom_file() {
     echo "- 잘못된 입력: $line"
     echo "- 올바른 형식: path:fileType:ecosystem"
     echo "- 예시: frontend/custom-deps.json:package.json:npm"
-    echo "- 지원 예시:"
-    echo "  - package.json:npm"
-    echo "  - pom.xml:maven"
-    echo "  - build.gradle:maven"
-    echo "  - build.gradle.kts:maven"
-    echo "  - requirements.txt:pip"
-    echo "  - pyproject.toml:pip"
-    echo "  - composer.json:composer"
-    echo "  - go.mod:go"
-    echo "  - Cargo.toml:cargo"
+    echo "- 지원 fileType/ecosystem 조합:"
+    echo "  - package.json / npm"
+    echo "  - pom.xml / maven"
+    echo "  - build.gradle / maven"
+    echo "  - build.gradle.kts / maven"
+    echo "  - requirements.txt / pip"
+    echo "  - pyproject.toml / pip"
+    echo "  - composer.json / composer"
+    echo "  - go.mod / go"
+    echo "  - Cargo.toml / cargo"
     exit 1
   fi
 
@@ -200,7 +200,8 @@ if [ "$FILE_COUNT" -gt 2 ]; then
   echo "- 발견된 의존성 파일 수: $FILE_COUNT"
   echo "- FiveGuys Security Scan은 현재 최대 2개의 의존성 파일만 검사할 수 있습니다."
   echo "- 일부 파일만 검사하면 누락 위험이 있으므로 검사를 중단합니다."
-  echo "- 해결 방법: 검사할 파일을 2개 이하로 줄이거나 dependency-files 옵션으로 검사 대상을 명시하세요."
+  echo "- 해결 방법: 자동 탐색 결과가 3개 이상이면 dependency-files 옵션으로 검사할 파일을 최대 2개까지 명시하세요."
+  echo "- 이미 dependency-files를 사용 중이라면 항목을 2개 이하로 줄이세요."
   echo "- 검사 대상 파일:"
   jq -r '.[] | "  - " + .path + " / fileType=" + .fileType + " / ecosystem=" + .ecosystem' files.json
   exit 1
@@ -213,11 +214,11 @@ print_section "FiveGuys API 호출"
 HTTP_STATUS=$(curl -s -o response.txt -w "%{http_code}" \
   -X POST "$API_URL" \
   -H "Content-Type: application/json" \
-  --data-binary @request.json)
+  --data-binary @request.json || true)
 
 echo "- HTTP_STATUS: $HTTP_STATUS"
 
-if [ "$HTTP_STATUS" = "000" ]; then
+if [ -z "$HTTP_STATUS" ] || [ "$HTTP_STATUS" = "000" ]; then
   print_section "FiveGuys API 연결 실패"
   echo "- FiveGuys API 서버에 연결할 수 없습니다."
   echo "- 확인 대상: $API_URL"
