@@ -1,6 +1,6 @@
-# FiveGuys Security Scan Action
+# PatchBurger Security Scan Action
 
-FiveGuys Security Scan Action은 GitHub Actions에서 의존성 파일을 검사하고, 위험 항목 발견 여부에 따라 이후 배포 단계를 진행하거나 중단할 수 있도록 돕는 CI/CD 보안 게이트입니다.
+PatchBurger Security Scan Action은 GitHub Actions에서 의존성 파일을 검사하고, 위험 항목 발견 여부에 따라 이후 배포 단계를 진행하거나 중단할 수 있도록 돕는 CI/CD 보안 게이트입니다.
 
 이 Action은 사용자의 레포지토리에서 의존성 파일을 읽고, FiveGuys 백엔드의 `/query/file-check` API로 파일 내용을 전달합니다. 백엔드는 의존성 파일 내부의 라이브러리를 파싱한 뒤 타이포스쿼팅, GitHub Advisory, Silent Patch 등을 검사하고 결과를 반환합니다.
 
@@ -17,7 +17,7 @@ FiveGuys Security Scan Action은 GitHub Actions에서 의존성 파일을 검사
 사용자 레포지토리에 `.github/workflows/fiveguys-security-scan.yml` 파일을 생성합니다.
 
 ```yaml
-name: FiveGuys Security Scan
+name: PatchBurger Security Scan
 
 on:
   push:
@@ -30,7 +30,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: Security-Academe-7-FiveGuys/fiveguys-security-scan-action@v1
+      - uses: Security-Academe-7-FiveGuys/patchburger@v1
         with:
           api-url: ${{ secrets.FIVEGUYS_API_URL }}
           deploy-on-risk: "false"
@@ -44,7 +44,7 @@ jobs:
 실제 배포 workflow에서는 FiveGuys Action을 배포 step보다 먼저 실행해야 합니다.
 
 ```yaml
-name: Deploy With FiveGuys Security Scan
+name: Deploy With PatchBurger Security Scan
 
 on:
   push:
@@ -57,7 +57,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: Security-Academe-7-FiveGuys/fiveguys-security-scan-action@v1
+      - uses: Security-Academe-7-FiveGuys/patchburger@v1
         with:
           api-url: ${{ secrets.FIVEGUYS_API_URL }}
           deploy-on-risk: "false"
@@ -130,7 +130,7 @@ jobs:
 파일명이 표준과 다르다면 `dependency-files` 옵션을 사용해 실제 파일 경로, `fileType`, `ecosystem`을 직접 지정할 수 있습니다.
 
 ```yaml
-- uses: Security-Academe-7-FiveGuys/fiveguys-security-scan-action@v1
+- uses: Security-Academe-7-FiveGuys/patchburger@v1
   with:
     api-url: ${{ secrets.FIVEGUYS_API_URL }}
     deploy-on-risk: "false"
@@ -207,7 +207,7 @@ Action 로그에는 결과가 source 기준으로 나뉘어 출력됩니다.
 일반 사용자는 major 태그를 사용합니다.
 
 ```yaml
-- uses: Security-Academe-7-FiveGuys/fiveguys-security-scan-action@v1
+- uses: Security-Academe-7-FiveGuys/patchburger@v1
 ```
 
 `v1` 태그는 호환 가능한 최신 v1 버전을 가리킵니다.
@@ -215,7 +215,7 @@ Action 로그에는 결과가 source 기준으로 나뉘어 출력됩니다.
 특정 시점의 동작을 고정하고 싶다면 고정 릴리즈 태그를 사용할 수 있습니다.
 
 ```yaml
-- uses: Security-Academe-7-FiveGuys/fiveguys-security-scan-action@v1.0.0
+- uses: Security-Academe-7-FiveGuys/patchburger@v1.0.0
 ```
 
 ## 테스트 시나리오

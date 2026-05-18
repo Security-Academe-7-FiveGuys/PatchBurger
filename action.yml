@@ -1,5 +1,5 @@
-name: "FiveGuys Security Scan"
-description: "FiveGuys Security Scan API로 의존성 파일을 검사합니다."
+name: "PatchBurger Security Scan"
+description: "PatchBurger Security Scan API로 의존성 파일을 검사합니다."
 
 inputs:
   api-url:
@@ -19,7 +19,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Run FiveGuys Security Scan
+    - name: Run PatchBurger Security Scan
       shell: bash
       run: |
         chmod +x "${{ github.action_path }}/scan.sh"

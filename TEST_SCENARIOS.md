@@ -1,6 +1,6 @@
-# FiveGuys Security Scan Action 테스트 시나리오
+# PatchBurger Security Scan Action 테스트 시나리오
 
-이 문서는 FiveGuys Security Scan Action의 주요 동작을 검증하기 위한 테스트 시나리오를 정리한 문서입니다.
+이 문서는 PatchBurger Security Scan Action의 주요 동작을 검증하기 위한 테스트 시나리오를 정리한 문서입니다.
 
 ## 1. 표준 의존성 파일 자동 탐색
 
@@ -18,7 +18,7 @@ pom.xml
 ### Workflow 설정
 
 ```yaml
-- uses: Security-Academe-7-FiveGuys/fiveguys-security-scan-action@v1
+- uses: Security-Academe-7-FiveGuys/patchburger@v1
   with:
     api-url: ${{ secrets.FIVEGUYS_API_URL }}
     deploy-on-risk: "false"
@@ -50,7 +50,7 @@ custom-pom.xml
 ### Workflow 설정
 
 ```yaml
-- uses: Security-Academe-7-FiveGuys/fiveguys-security-scan-action@v1
+- uses: Security-Academe-7-FiveGuys/patchburger@v1
   with:
     api-url: ${{ secrets.FIVEGUYS_API_URL }}
     deploy-on-risk: "false"
@@ -86,7 +86,7 @@ custom-go.mod
 ### Workflow 설정
 
 ```yaml
-- uses: Security-Academe-7-FiveGuys/fiveguys-security-scan-action@v1
+- uses: Security-Academe-7-FiveGuys/patchburger@v1
   with:
     api-url: ${{ secrets.FIVEGUYS_API_URL }}
     deploy-on-risk: "false"
@@ -113,7 +113,7 @@ custom-go.mod
 ### Workflow 설정
 
 ```yaml
-- uses: Security-Academe-7-FiveGuys/fiveguys-security-scan-action@v1
+- uses: Security-Academe-7-FiveGuys/patchburger@v1
   with:
     api-url: ${{ secrets.FIVEGUYS_API_URL }}
     deploy-on-risk: "false"
@@ -137,7 +137,7 @@ custom-go.mod
 ### Workflow 설정
 
 ```yaml
-- uses: Security-Academe-7-FiveGuys/fiveguys-security-scan-action@v1
+- uses: Security-Academe-7-FiveGuys/patchburger@v1
   with:
     api-url: ${{ secrets.FIVEGUYS_API_URL }}
     deploy-on-risk: "true"
@@ -226,7 +226,7 @@ go.mod
 ### Workflow 설정
 
 ```yaml
-- uses: Security-Academe-7-FiveGuys/fiveguys-security-scan-action@v1
+- uses: Security-Academe-7-FiveGuys/patchburger@v1
   with:
     api-url: ${{ secrets.FIVEGUYS_API_URL }}
     deploy-on-risk: "false"

@@ -19,7 +19,7 @@ trim() {
   printf '%s' "$value"
 }
 
-print_section "FiveGuys Security Scan 시작"
+print_section "PatchBurger Security Scan 시작"
 echo "- 위험 항목 발견 시 배포 진행 여부: $DEPLOY_ON_RISK"
 
 if [ -z "$(trim "$API_URL")" ]; then
@@ -260,7 +260,7 @@ fi
 if [ "$FILE_COUNT" -gt 2 ]; then
   print_section "검사 대상 파일 개수 초과"
   echo "- 발견된 의존성 파일 수: $FILE_COUNT"
-  echo "- FiveGuys Security Scan은 현재 최대 2개의 의존성 파일만 검사할 수 있습니다."
+  echo "- PatchBurger Security Scan은 현재 최대 2개의 의존성 파일만 검사할 수 있습니다."
   echo "- 일부 파일만 검사하면 누락 위험이 있으므로 검사를 중단합니다."
   echo "- 해결 방법: 자동 탐색 결과가 3개 이상이면 dependency-files 옵션으로 검사할 파일을 최대 2개까지 명시하세요."
   echo "- 이미 dependency-files를 사용 중이라면 항목을 2개 이하로 줄이세요."
@@ -298,7 +298,7 @@ SAFE_COUNT=$(jq -r '.safeCount // 0' response.txt)
 WARNING_COUNT=$(jq -r '.warningCount // 0' response.txt)
 CRITICAL_COUNT=$(jq -r '.criticalCount // 0' response.txt)
 
-print_section "FiveGuys Security Scan 결과 요약"
+print_section "PatchBurger Security Scan 결과 요약"
 echo "- 검사 파일 수: $TOTAL_FILES"
 echo "- 검사 라이브러리 수: $TOTAL_LIBRARIES"
 echo "- SAFE: $SAFE_COUNT"
