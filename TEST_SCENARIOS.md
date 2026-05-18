@@ -18,7 +18,7 @@ pom.xml
 ### Workflow 설정
 
 ```yaml
-- uses: Security-Academe-7-FiveGuys/patchburger@v1
+- uses: Security-Academe-7-FiveGuys/PatchBurger@v1
   with:
     api-url: ${{ secrets.FIVEGUYS_API_URL }}
     deploy-on-risk: "false"
@@ -50,7 +50,7 @@ custom-pom.xml
 ### Workflow 설정
 
 ```yaml
-- uses: Security-Academe-7-FiveGuys/patchburger@v1
+- uses: Security-Academe-7-FiveGuys/PatchBurger@v1
   with:
     api-url: ${{ secrets.FIVEGUYS_API_URL }}
     deploy-on-risk: "false"
@@ -86,7 +86,7 @@ custom-go.mod
 ### Workflow 설정
 
 ```yaml
-- uses: Security-Academe-7-FiveGuys/patchburger@v1
+- uses: Security-Academe-7-FiveGuys/PatchBurger@v1
   with:
     api-url: ${{ secrets.FIVEGUYS_API_URL }}
     deploy-on-risk: "false"
@@ -113,7 +113,7 @@ custom-go.mod
 ### Workflow 설정
 
 ```yaml
-- uses: Security-Academe-7-FiveGuys/patchburger@v1
+- uses: Security-Academe-7-FiveGuys/PatchBurger@v1
   with:
     api-url: ${{ secrets.FIVEGUYS_API_URL }}
     deploy-on-risk: "false"
@@ -137,7 +137,7 @@ custom-go.mod
 ### Workflow 설정
 
 ```yaml
-- uses: Security-Academe-7-FiveGuys/patchburger@v1
+- uses: Security-Academe-7-FiveGuys/PatchBurger@v1
   with:
     api-url: ${{ secrets.FIVEGUYS_API_URL }}
     deploy-on-risk: "true"
@@ -226,7 +226,7 @@ go.mod
 ### Workflow 설정
 
 ```yaml
-- uses: Security-Academe-7-FiveGuys/patchburger@v1
+- uses: Security-Academe-7-FiveGuys/PatchBurger@v1
   with:
     api-url: ${{ secrets.FIVEGUYS_API_URL }}
     deploy-on-risk: "false"

@@ -30,7 +30,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: Security-Academe-7-FiveGuys/patchburger@v1
+      - uses: Security-Academe-7-FiveGuys/PatchBurger@v1
         with:
           api-url: ${{ secrets.FIVEGUYS_API_URL }}
           deploy-on-risk: "false"
@@ -57,7 +57,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: Security-Academe-7-FiveGuys/patchburger@v1
+      - uses: Security-Academe-7-FiveGuys/PatchBurger@v1
         with:
           api-url: ${{ secrets.FIVEGUYS_API_URL }}
           deploy-on-risk: "false"
@@ -130,7 +130,7 @@ jobs:
 파일명이 표준과 다르다면 `dependency-files` 옵션을 사용해 실제 파일 경로, `fileType`, `ecosystem`을 직접 지정할 수 있습니다.
 
 ```yaml
-- uses: Security-Academe-7-FiveGuys/patchburger@v1
+- uses: Security-Academe-7-FiveGuys/PatchBurger@v1
   with:
     api-url: ${{ secrets.FIVEGUYS_API_URL }}
     deploy-on-risk: "false"
@@ -207,7 +207,7 @@ Action 로그에는 결과가 source 기준으로 나뉘어 출력됩니다.
 일반 사용자는 major 태그를 사용합니다.
 
 ```yaml
-- uses: Security-Academe-7-FiveGuys/patchburger@v1
+- uses: Security-Academe-7-FiveGuys/PatchBurger@v1
 ```
 
 `v1` 태그는 호환 가능한 최신 v1 버전을 가리킵니다.
@@ -215,7 +215,7 @@ Action 로그에는 결과가 source 기준으로 나뉘어 출력됩니다.
 특정 시점의 동작을 고정하고 싶다면 고정 릴리즈 태그를 사용할 수 있습니다.
 
 ```yaml
-- uses: Security-Academe-7-FiveGuys/patchburger@v1.0.0
+- uses: Security-Academe-7-FiveGuys/PatchBurger@v1.0.0
 ```
 
 ## 테스트 시나리오
