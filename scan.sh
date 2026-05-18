@@ -23,7 +23,7 @@ print_section "PatchBurger Security Scan 시작"
 echo "- 위험 항목 발견 시 배포 진행 여부: $DEPLOY_ON_RISK"
 
 if [ -z "$(trim "$API_URL")" ]; then
-  print_section "FiveGuys API URL 설정 오류"
+  print_section "PatchBurger API URL 설정 오류"
   echo "- api-url 입력값이 비어 있습니다."
   echo "- GitHub Secrets에 API 주소를 저장한 뒤 workflow에서 api-url로 전달하세요."
   echo "- 예시: api-url: \${{ secrets.FIVEGUYS_API_URL }}"
@@ -110,7 +110,7 @@ add_custom_file() {
 }
 
 print_error_response() {
-  print_section "FiveGuys API 호출 실패"
+  print_section "PatchBurger API 호출 실패"
 
   if jq empty response.txt 2>/dev/null; then
     echo "- 상태 코드: $HTTP_STATUS"
@@ -271,7 +271,7 @@ fi
 
 jq -n --slurpfile files files.json '{ files: $files[0] }' > request.json
 
-print_section "FiveGuys API 호출"
+print_section "PatchBurger API 호출"
 
 HTTP_STATUS=$(curl -s -o response.txt -w "%{http_code}" \
   -X POST "$API_URL" \
@@ -281,8 +281,8 @@ HTTP_STATUS=$(curl -s -o response.txt -w "%{http_code}" \
 echo "- HTTP_STATUS: $HTTP_STATUS"
 
 if [ -z "$HTTP_STATUS" ] || [ "$HTTP_STATUS" = "000" ]; then
-  print_section "FiveGuys API 연결 실패"
-  echo "- FiveGuys API 서버에 연결할 수 없습니다."
+  print_section "PatchBurger API 연결 실패"
+  echo "- PatchBurger API 서버에 연결할 수 없습니다."
   echo "- 확인 대상: $API_URL"
   exit 1
 fi

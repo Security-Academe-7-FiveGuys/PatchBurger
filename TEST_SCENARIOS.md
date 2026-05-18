@@ -30,7 +30,7 @@ pom.xml
 - 표준 의존성 파일 자동 탐색 모드가 사용됩니다.
 - package.json이 fileType=package.json, ecosystem=npm으로 인식됩니다.
 - pom.xml이 fileType=pom.xml, ecosystem=maven으로 인식됩니다.
-- FiveGuys API가 호출됩니다.
+- PatchBurger API가 호출됩니다.
 - WARNING 또는 CRITICAL 결과가 있으면 deploy-on-risk=false 정책에 따라 workflow가 실패합니다.
 ```
 
@@ -66,7 +66,7 @@ custom-pom.xml
 - custom-deps.json이 fileType=package.json, ecosystem=npm으로 전달됩니다.
 - custom-pom.xml이 fileType=pom.xml, ecosystem=maven으로 전달됩니다.
 - 자동 탐색은 수행되지 않습니다.
-- FiveGuys API가 호출됩니다.
+- PatchBurger API가 호출됩니다.
 ```
 
 ## 3. 의존성 파일 3개 이상 차단
@@ -100,7 +100,7 @@ custom-go.mod
 
 ```text
 - Action이 의존성 파일 3개를 감지합니다.
-- FiveGuys API를 호출하기 전에 실패합니다.
+- PatchBurger API를 호출하기 전에 실패합니다.
 - 로그에 최대 2개의 의존성 파일만 지원한다는 안내가 출력됩니다.
 ```
 
@@ -156,7 +156,7 @@ custom-go.mod
 
 ### 목적
 
-FiveGuys 데이터에 저장된 Silent Patch 의심 항목이 Action 결과에 표시되는지 확인합니다.
+PatchBurger 데이터에 저장된 Silent Patch 의심 항목이 Action 결과에 표시되는지 확인합니다.
 
 ### 예시 의존성
 
@@ -204,7 +204,7 @@ dependency-files: |
 ### 기대 결과
 
 ```text
-- FiveGuys API 호출 전에 실패합니다.
+- PatchBurger API 호출 전에 실패합니다.
 - 로그에 올바른 형식인 path:fileType:ecosystem이 출력됩니다.
 - 지원 예시가 함께 출력됩니다.
 ```
@@ -242,5 +242,5 @@ go.mod
 - 자동 탐색은 수행되지 않습니다.
 - package.json과 pom.xml만 검사 대상에 포함됩니다.
 - go.mod는 검사 대상에서 제외됩니다.
-- 선택된 파일 수가 2개이므로 FiveGuys API가 호출됩니다.
+- 선택된 파일 수가 2개이므로 PatchBurger API가 호출됩니다.
 ```

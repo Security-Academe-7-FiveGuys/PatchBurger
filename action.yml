@@ -3,7 +3,7 @@ description: "PatchBurger Security Scan API로 의존성 파일을 검사합니�
 
 inputs:
   api-url:
-    description: "FiveGuys /query/file-check API 주소"
+    description: "PatchBurger /query/file-check API 주소"
     required: true
 
   deploy-on-risk:

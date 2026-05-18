@@ -2,7 +2,7 @@
 
 PatchBurger Security Scan Action은 GitHub Actions에서 의존성 파일을 검사하고, 위험 항목 발견 여부에 따라 이후 배포 단계를 진행하거나 중단할 수 있도록 돕는 CI/CD 보안 게이트입니다.
 
-이 Action은 사용자의 레포지토리에서 의존성 파일을 읽고, FiveGuys 백엔드의 `/query/file-check` API로 파일 내용을 전달합니다. 백엔드는 의존성 파일 내부의 라이브러리를 파싱한 뒤 타이포스쿼팅, GitHub Advisory, Silent Patch 등을 검사하고 결과를 반환합니다.
+이 Action은 사용자의 레포지토리에서 의존성 파일을 읽고, PatchBurger 백엔드의 `/query/file-check` API로 파일 내용을 전달합니다. 백엔드는 의존성 파일 내부의 라이브러리를 파싱한 뒤 타이포스쿼팅, GitHub Advisory, Silent Patch 등을 검사하고 결과를 반환합니다.
 
 주요 기능은 다음과 같습니다.
 
@@ -14,7 +14,7 @@ PatchBurger Security Scan Action은 GitHub Actions에서 의존성 파일을 검
 
 ## 빠른 시작
 
-사용자 레포지토리에 `.github/workflows/fiveguys-security-scan.yml` 파일을 생성합니다.
+사용자 레포지토리에 `.github/workflows/patchburger-security-scan.yml` 파일을 생성합니다.
 
 ```yaml
 name: PatchBurger Security Scan
@@ -37,11 +37,11 @@ jobs:
 ```
 
 위 설정에서는 검사 결과에 WARNING 또는 CRITICAL 항목이 발견되면 workflow가 실패합니다.
-`FIVEGUYS_API_URL`은 사용자 레포지토리의 GitHub Secrets에 등록한 FiveGuys API 주소입니다.
+`FIVEGUYS_API_URL`은 사용자 레포지토리의 GitHub Secrets에 등록한 PatchBurger API 주소입니다.
 
 ## 배포 단계와 함께 사용하기
 
-실제 배포 workflow에서는 FiveGuys Action을 배포 step보다 먼저 실행해야 합니다.
+실제 배포 workflow에서는 PatchBurger Action을 배포 step보다 먼저 실행해야 합니다.
 
 ```yaml
 name: Deploy With PatchBurger Security Scan
@@ -67,13 +67,13 @@ jobs:
           echo "여기에 실제 배포 명령어를 작성합니다."
 ```
 
-`deploy-on-risk`가 `false`이고 위험 항목이 발견되면 FiveGuys Action이 실패 처리됩니다. 따라서 뒤에 있는 `Deploy` step은 실행되지 않습니다.
+`deploy-on-risk`가 `false`이고 위험 항목이 발견되면 PatchBurger Action이 실패 처리됩니다. 따라서 뒤에 있는 `Deploy` step은 실행되지 않습니다.
 
 ## 입력 옵션
 
 | 이름 | 필수 여부 | 기본값 | 설명 |
 | --- | --- | --- | --- |
-| `api-url` | 예 | 없음 | FiveGuys `/query/file-check` API 주소입니다. 공개 workflow에 직접 작성하지 말고 GitHub Secrets로 전달하는 것을 권장합니다. |
+| `api-url` | 예 | 없음 | PatchBurger `/query/file-check` API 주소입니다. 공개 workflow에 직접 작성하지 말고 GitHub Secrets로 전달하는 것을 권장합니다. |
 | `deploy-on-risk` | 아니오 | `false` | 위험 항목 발견 시 이후 step을 계속 실행할지 결정합니다. `false`이면 WARNING/CRITICAL 발견 시 실패 처리하고, `true`이면 위험 항목이 있어도 성공 처리합니다. |
 | `dependency-files` | 아니오 | 빈 값 | 표준 파일명이 아닌 의존성 파일을 검사할 때 사용합니다. 형식은 `path:fileType:ecosystem`이며 여러 개는 줄바꿈으로 입력합니다. |
 
@@ -93,8 +93,8 @@ jobs:
 - `dependency-files`에 지정한 파일 경로가 존재하지 않는 경우
 - `dependency-files` 형식이 잘못된 경우
 - `api-url` 입력값이 비어 있는 경우
-- FiveGuys API 서버에 연결할 수 없는 경우
-- FiveGuys API가 요청을 거부한 경우
+- PatchBurger API 서버에 연결할 수 없는 경우
+- PatchBurger API가 요청을 거부한 경우
 
 ## 지원 의존성 파일
 
@@ -148,7 +148,7 @@ path:fileType:ecosystem
 | 항목 | 설명 |
 | --- | --- |
 | `path` | 사용자 레포지토리에 존재하는 실제 파일 경로 |
-| `fileType` | FiveGuys API에 전달할 의존성 파일 형식 |
+| `fileType` | PatchBurger API에 전달할 의존성 파일 형식 |
 | `ecosystem` | 검사 기준이 되는 패키지 생태계 |
 
 `path`는 `actions/checkout` 이후의 레포지토리 루트를 기준으로 작성합니다.
@@ -199,7 +199,7 @@ Action 로그에는 결과가 source 기준으로 나뉘어 출력됩니다.
 | `UNRESOLVED_VERSION` | 정확한 버전이 아니어서 취약점 범위 비교가 제한되는 항목 |
 | `ADVISORY_UNAVAILABLE` | GitHub Advisory 조회에 실패한 항목 |
 | `GITHUB_ADVISORY` | GitHub Advisory에서 취약점이 발견된 항목 |
-| `SILENT_PATCH` | FiveGuys 데이터에서 Silent Patch 의심 항목으로 탐지된 항목 |
+| `SILENT_PATCH` | PatchBurger 데이터에서 Silent Patch 의심 항목으로 탐지된 항목 |
 | `SAFE` | 위험 항목이 발견되지 않은 항목 |
 
 ## 버전 태그 정책
