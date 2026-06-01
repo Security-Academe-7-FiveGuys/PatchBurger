@@ -4,7 +4,8 @@ description: "PatchBurger Security Scan API로 의존성 파일을 검사합니�
 inputs:
   api-url:
     description: "PatchBurger /query/file-check API 주소"
-    required: true
+    required: false
+    default: "https://patchburger.duckdns.org/query/file-check"
 
   deploy-on-risk:
     description: "WARNING 또는 CRITICAL 항목이 발견되어도 이후 workflow를 계속 진행할지 여부"

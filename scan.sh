@@ -25,8 +25,8 @@ echo "- 위험 항목 발견 시 배포 진행 여부: $DEPLOY_ON_RISK"
 if [ -z "$(trim "$API_URL")" ]; then
   print_section "PatchBurger API URL 설정 오류"
   echo "- api-url 입력값이 비어 있습니다."
-  echo "- GitHub Secrets에 API 주소를 저장한 뒤 workflow에서 api-url로 전달하세요."
-  echo "- 예시: api-url: \${{ secrets.FIVEGUYS_API_URL }}"
+  echo "- 기본 API 주소가 action.yml에 설정되어 있는지 확인하세요."
+  echo "- 직접 API 주소를 지정하려면 workflow에서 api-url 값을 전달하세요."
   exit 1
 fi
 

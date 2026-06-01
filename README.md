@@ -32,12 +32,11 @@ jobs:
 
       - uses: Security-Academe-7-FiveGuys/PatchBurger@v1
         with:
-          api-url: ${{ secrets.FIVEGUYS_API_URL }}
           deploy-on-risk: "false"
 ```
 
 위 설정에서는 검사 결과에 WARNING 또는 CRITICAL 항목이 발견되면 workflow가 실패합니다.
-`FIVEGUYS_API_URL`은 사용자 레포지토리의 GitHub Secrets에 등록한 PatchBurger API 주소입니다.
+PatchBurger API 주소는 Action에 기본값으로 설정되어 있으므로 일반 사용자는 별도로 입력하지 않아도 됩니다.
 
 ## 배포 단계와 함께 사용하기
 
@@ -59,7 +58,6 @@ jobs:
 
       - uses: Security-Academe-7-FiveGuys/PatchBurger@v1
         with:
-          api-url: ${{ secrets.FIVEGUYS_API_URL }}
           deploy-on-risk: "false"
 
       - name: Deploy
@@ -73,7 +71,7 @@ jobs:
 
 | 이름 | 필수 여부 | 기본값 | 설명 |
 | --- | --- | --- | --- |
-| `api-url` | 예 | 없음 | PatchBurger `/query/file-check` API 주소입니다. 공개 workflow에 직접 작성하지 말고 GitHub Secrets로 전달하는 것을 권장합니다. |
+| `api-url` | 아니오 | `https://patchburger.duckdns.org/query/file-check` | PatchBurger `/query/file-check` API 주소입니다. 일반 사용자는 입력하지 않아도 되며, 별도 서버를 사용할 때만 직접 지정합니다. |
 | `deploy-on-risk` | 아니오 | `false` | 위험 항목 발견 시 이후 step을 계속 실행할지 결정합니다. `false`이면 WARNING/CRITICAL 발견 시 실패 처리하고, `true`이면 위험 항목이 있어도 성공 처리합니다. |
 | `dependency-files` | 아니오 | 빈 값 | 표준 파일명이 아닌 의존성 파일을 검사할 때 사용합니다. 형식은 `path:fileType:ecosystem`이며 여러 개는 줄바꿈으로 입력합니다. |
 
@@ -92,7 +90,7 @@ jobs:
 - 선택된 의존성 파일이 3개 이상인 경우
 - `dependency-files`에 지정한 파일 경로가 존재하지 않는 경우
 - `dependency-files` 형식이 잘못된 경우
-- `api-url` 입력값이 비어 있는 경우
+- `api-url` 입력값이 비어 있고 Action 기본값도 설정되어 있지 않은 경우
 - PatchBurger API 서버에 연결할 수 없는 경우
 - PatchBurger API가 요청을 거부한 경우
 
@@ -132,7 +130,6 @@ jobs:
 ```yaml
 - uses: Security-Academe-7-FiveGuys/PatchBurger@v1
   with:
-    api-url: ${{ secrets.FIVEGUYS_API_URL }}
     deploy-on-risk: "false"
     dependency-files: |
       custom-deps.json:package.json:npm
