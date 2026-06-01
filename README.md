@@ -199,6 +199,67 @@ Action 로그에는 결과가 source 기준으로 나뉘어 출력됩니다.
 | `SILENT_PATCH` | PatchBurger 데이터에서 Silent Patch 의심 항목으로 탐지된 항목 |
 | `SAFE` | 위험 항목이 발견되지 않은 항목 |
 
+## 운영 및 보안 권장 사항
+
+PatchBurger Action은 기본적으로 다음 API를 호출합니다.
+
+```text
+https://patchburger.duckdns.org/query/file-check
+```
+
+이 주소는 GitHub Actions에서 호출되는 공개 API 엔드포인트입니다. 따라서 보안은 URL을 숨기는 방식이 아니라, HTTPS, 리버스 프록시, 포트 제한, 요청 제한 정책으로 구성하는 것을 권장합니다.
+
+권장 운영 구조는 다음과 같습니다.
+
+```text
+사용자 GitHub Actions
+→ https://patchburger.duckdns.org/query/file-check
+→ Nginx 443
+→ localhost:8081 Spring Boot
+```
+
+서버 인바운드 포트는 다음처럼 운영하는 것을 권장합니다.
+
+| 포트 | 공개 여부 | 용도 |
+| --- | --- | --- |
+| `22` | 제한 공개 | 서버 SSH 접속용입니다. 가능하면 관리자 IP만 허용합니다. |
+| `80` | 공개 | HTTP 요청을 HTTPS로 리다이렉트하고, Let's Encrypt 인증서 갱신에 사용합니다. |
+| `443` | 공개 | PatchBurger API HTTPS 요청을 받습니다. |
+| `8081` | 비공개 권장 | Spring Boot 내부 포트입니다. Nginx에서 `localhost:8081`로만 접근하는 것을 권장합니다. |
+
+Nginx에는 요청 제한을 설정해 과도한 호출을 완화할 수 있습니다.
+
+`/etc/nginx/nginx.conf`의 `http` 블록 안에는 요청 제한 zone을 정의합니다.
+
+```nginx
+http {
+    limit_req_zone $binary_remote_addr zone=patchburger_api:10m rate=10r/m;
+}
+```
+
+`/etc/nginx/sites-available/patchburger`의 `location /query/file-check` 안에는 실제 제한 정책을 적용합니다.
+
+```nginx
+server {
+    listen 443 ssl;
+    server_name patchburger.duckdns.org;
+
+    client_max_body_size 2m;
+
+    location /query/file-check {
+        limit_req zone=patchburger_api burst=5 nodelay;
+
+        proxy_pass http://localhost:8081;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+API key 기반 인증을 도입할 수도 있지만, 이 경우 사용자가 별도 Secret을 등록하지 않고 Action을 사용하는 현재 구조와 충돌할 수 있습니다. API key를 강제하려면 사용자별 발급 키, GitHub App, 또는 별도 인증 게이트웨이 정책을 함께 설계하는 것을 권장합니다.
+
 ## 버전 태그 정책
 
 일반 사용자는 major 태그를 사용합니다.
