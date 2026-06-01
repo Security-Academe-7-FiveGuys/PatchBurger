@@ -20,7 +20,6 @@ pom.xml
 ```yaml
 - uses: Security-Academe-7-FiveGuys/PatchBurger@v1
   with:
-    api-url: ${{ secrets.FIVEGUYS_API_URL }}
     deploy-on-risk: "false"
 ```
 
@@ -52,7 +51,6 @@ custom-pom.xml
 ```yaml
 - uses: Security-Academe-7-FiveGuys/PatchBurger@v1
   with:
-    api-url: ${{ secrets.FIVEGUYS_API_URL }}
     deploy-on-risk: "false"
     dependency-files: |
       custom-deps.json:package.json:npm
@@ -88,7 +86,6 @@ custom-go.mod
 ```yaml
 - uses: Security-Academe-7-FiveGuys/PatchBurger@v1
   with:
-    api-url: ${{ secrets.FIVEGUYS_API_URL }}
     deploy-on-risk: "false"
     dependency-files: |
       custom-deps.json:package.json:npm
@@ -115,7 +112,6 @@ custom-go.mod
 ```yaml
 - uses: Security-Academe-7-FiveGuys/PatchBurger@v1
   with:
-    api-url: ${{ secrets.FIVEGUYS_API_URL }}
     deploy-on-risk: "false"
 ```
 
@@ -139,7 +135,6 @@ custom-go.mod
 ```yaml
 - uses: Security-Academe-7-FiveGuys/PatchBurger@v1
   with:
-    api-url: ${{ secrets.FIVEGUYS_API_URL }}
     deploy-on-risk: "true"
 ```
 
@@ -228,7 +223,6 @@ go.mod
 ```yaml
 - uses: Security-Academe-7-FiveGuys/PatchBurger@v1
   with:
-    api-url: ${{ secrets.FIVEGUYS_API_URL }}
     deploy-on-risk: "false"
     dependency-files: |
       package.json:package.json:npm
