@@ -50,8 +50,6 @@ add_file() {
     return
   fi
 
-  echo "- 발견: $path / ecosystem=$ecosystem"
-
   jq --arg path "$path" \
      --arg fileType "$file_type" \
      --arg ecosystem "$ecosystem" \
@@ -244,43 +242,9 @@ print_risk_results() {
   print_risk_results_by_level "WARNING" "WARNING 항목"
 }
 
-print_safe_results() {
-  print_section "SAFE 결과"
-
-  local count
-  count=$(jq '
-    [.fileResults[]?.results[]? | select(.source == "SAFE")] | length
-  ' response.txt)
-
-  if [ "$count" -eq 0 ]; then
-    echo "- 없음"
-    return
-  fi
-
-  jq -r '
-    def display_name($file; $result):
-      if $file.ecosystem == "maven" and ($result.name | contains(":")) then
-        ($result.name | split(":")[1])
-      else
-        $result.name
-      end;
-
-    .fileResults[]? as $file |
-    $file.results[]? |
-    select(.source == "SAFE") |
-    . as $result |
-    "- [" + $file.path + "] "
-    + display_name($file; $result) + "@" + ($result.version // "-")
-    + " / 안전한 항목입니다."
-  ' response.txt
-}
-
 print_section "검사 대상 파일 탐색"
 
 if [ -n "$(trim "$CUSTOM_DEPENDENCY_FILES")" ]; then
-  echo "- 사용자 지정 의존성 파일 모드"
-  echo "- 형식: path:fileType:ecosystem"
-
   while IFS= read -r line || [ -n "$line" ]; do
     line=$(trim "$line")
 
@@ -291,8 +255,6 @@ if [ -n "$(trim "$CUSTOM_DEPENDENCY_FILES")" ]; then
     add_custom_file "$line"
   done <<< "$CUSTOM_DEPENDENCY_FILES"
 else
-  echo "- 표준 의존성 파일 자동 탐색 모드"
-
   add_file "package.json" "package.json" "npm"
   add_file "composer.json" "composer.json" "composer"
   add_file "go.mod" "go.mod" "go"
@@ -322,6 +284,8 @@ if [ "$FILE_COUNT" -gt 2 ]; then
   jq -r '.[] | "  - " + .path + " / fileType=" + .fileType + " / ecosystem=" + .ecosystem' files.json
   exit 1
 fi
+
+echo "- 검사 대상 파일 수: $FILE_COUNT"
 
 jq -n --slurpfile files files.json '{ files: $files[0] }' > request.json
 
@@ -367,29 +331,16 @@ fi
 
 print_risk_results
 
-print_section "검사 대상 파일"
-jq -r '
-  .fileResults[]?
-  | "- " + .path
-  + " / fileType=" + .fileType
-  + " / ecosystem=" + .ecosystem
-  + " / status=" + (.status // "SUCCESS")
-' response.txt
-
-print_section "의존성 항목 없음 안내"
 NO_DEPENDENCIES_COUNT=$(jq '[.fileResults[]? | select(.status == "NO_DEPENDENCIES_FOUND")] | length' response.txt)
 
 if [ "$NO_DEPENDENCIES_COUNT" -gt 0 ]; then
+  print_section "의존성 항목 없음 안내"
   jq -r '
     .fileResults[]?
     | select(.status == "NO_DEPENDENCIES_FOUND")
     | "- " + .path + " / " + (.message // "의존성 항목을 찾을 수 없습니다.")
   ' response.txt
-else
-  echo "- 없음"
 fi
-
-print_safe_results
 
 print_section "최종 배포 옵션 판정"
 echo "- 위험 항목 발견 시 배포 진행 여부: $DEPLOY_ON_RISK"
