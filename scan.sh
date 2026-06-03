@@ -21,6 +21,7 @@ trim() {
 
 print_section "PatchBurger Security Scan 시작"
 echo "- 위험 항목 발견 시 배포 진행 여부: $DEPLOY_ON_RISK"
+echo "- API 연결: PatchBurger HTTPS API"
 
 if [ -z "$(trim "$API_URL")" ]; then
   print_section "PatchBurger API URL 설정 오류"
@@ -29,8 +30,6 @@ if [ -z "$(trim "$API_URL")" ]; then
   echo "- 직접 API 주소를 지정하려면 workflow에서 api-url 값을 전달하세요."
   exit 1
 fi
-
-echo "- API URL: $API_URL"
 
 if [ "$DEPLOY_ON_RISK" != "true" ] && [ "$DEPLOY_ON_RISK" != "false" ]; then
   print_section "배포 옵션 설정 오류"
@@ -175,6 +174,77 @@ print_results() {
   ' response.txt
 }
 
+print_priority_results_by_level() {
+  local risk_level="$1"
+  local title="$2"
+
+  local count
+  count=$(jq --arg risk_level "$risk_level" '
+    [.fileResults[]?.results[]? | select(.riskLevel == $risk_level)] | length
+  ' response.txt)
+
+  if [ "$count" -eq 0 ]; then
+    return
+  fi
+
+  echo ""
+  echo "[$title]"
+
+  jq -r --arg risk_level "$risk_level" '
+    def display_name($file; $result):
+      if $file.ecosystem == "maven" and ($result.name | contains(":")) then
+        ($result.name | split(":")[1])
+      else
+        $result.name
+      end;
+
+    .fileResults[]? as $file |
+    $file.results[]? |
+    select(.riskLevel == $risk_level) |
+    . as $result |
+    "- [" + $file.path + "] "
+    + display_name($file; $result) + "@" + ($result.version // "-") + "\n"
+    + "  - source: " + ($result.source // "-") + "\n"
+    + "  - reason: "
+    + (
+        if $result.source == "SILENT_PATCH" then
+          "Silent Patch 의심 항목입니다. 상세 내용은 Silent Patch 탐지 결과를 확인하세요."
+        else
+          $result.typosquatting.reason
+          // $result.aiSummary
+          // (
+            if $result.source == "GITHUB_ADVISORY" then
+              "GitHub Advisory 취약점이 발견되었습니다."
+            elif $result.source == "UNRESOLVED_VERSION" then
+              "정확한 버전이 아니어서 취약점 범위 비교가 제한됩니다."
+            elif $result.source == "ADVISORY_UNAVAILABLE" then
+              "GitHub Advisory 조회에 실패했습니다."
+            else
+              "위험 항목이 발견되었습니다."
+            end
+          )
+        end
+      )
+  ' response.txt
+}
+
+print_priority_results() {
+  print_section "우선 조치 필요 항목"
+
+  local risk_count
+  risk_count=$(jq '
+    [.fileResults[]?.results[]? | select(.riskLevel == "CRITICAL" or .riskLevel == "WARNING")] | length
+  ' response.txt)
+
+  if [ "$risk_count" -eq 0 ]; then
+    echo "- 없음"
+    return
+  fi
+
+  print_priority_results_by_level "CRITICAL" "CRITICAL"
+  print_priority_results_by_level "WARNING" "WARNING"
+}
+
 print_silent_patch_results() {
   print_section "5. Silent Patch 탐지 결과"
 
@@ -196,12 +266,18 @@ print_silent_patch_results() {
         $result.name
       end;
 
-    def clean_summary:
+    def clean_summary_items:
       gsub("^\\[\\["; "")
       | gsub("\\]\\]$"; "")
       | gsub("^\\["; "")
       | gsub("\\]$"; "")
-      | gsub("\\] fix:"; " fix:");
+      | gsub(", \\["; "\n[")
+      | split("\n")
+      | map(
+          gsub("^\\["; "")
+          | gsub("\\]$"; "")
+          | if startswith("[") then . else "[" + . end
+        );
 
     .fileResults[]? as $file |
     $file.results[]? |
@@ -213,8 +289,7 @@ print_silent_patch_results() {
     + "  - 사유:\n"
     + (
         $summary
-        | clean_summary
-        | split(" - ")
+        | clean_summary_items
         | map("    - " + .)
         | join("\n")
       )
@@ -283,7 +358,7 @@ echo "- HTTP_STATUS: $HTTP_STATUS"
 if [ -z "$HTTP_STATUS" ] || [ "$HTTP_STATUS" = "000" ]; then
   print_section "PatchBurger API 연결 실패"
   echo "- PatchBurger API 서버에 연결할 수 없습니다."
-  echo "- 확인 대상: $API_URL"
+  echo "- API 연결 설정 또는 네트워크 상태를 확인하세요."
   exit 1
 fi
 
@@ -304,6 +379,14 @@ echo "- 검사 라이브러리 수: $TOTAL_LIBRARIES"
 echo "- SAFE: $SAFE_COUNT"
 echo "- WARNING: $WARNING_COUNT"
 echo "- CRITICAL: $CRITICAL_COUNT"
+
+if [ "$WARNING_COUNT" -eq 0 ] && [ "$CRITICAL_COUNT" -eq 0 ]; then
+  echo "- 최종 판정: PASSED"
+else
+  echo "- 최종 판정: RISK_FOUND"
+fi
+
+print_priority_results
 
 print_section "검사 대상 파일"
 jq -r '
