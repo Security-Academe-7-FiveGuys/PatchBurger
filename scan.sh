@@ -132,49 +132,7 @@ print_error_response() {
   fi
 }
 
-print_results() {
-  local title="$1"
-  local source="$2"
-  local empty_message="$3"
-
-  print_section "$title"
-
-  local count
-  count=$(jq --arg source "$source" '
-    [.fileResults[]?.results[]? | select(.source == $source)] | length
-  ' response.txt)
-
-  if [ "$count" -eq 0 ]; then
-    echo "- 없음"
-    return
-  fi
-
-  jq -r --arg source "$source" --arg empty_message "$empty_message" '
-    .fileResults[]? as $file |
-    $file.results[]? |
-    select(.source == $source) |
-    . as $result |
-    (
-      if $file.ecosystem == "maven" and ($result.name | contains(":")) then
-        ($result.name | split(":")[1])
-      else
-        $result.name
-      end
-    ) as $displayName |
-    "- [" + $file.path + "] "
-    + $displayName + "@" + ($result.version // "-")
-    + " -> riskLevel=" + ($result.riskLevel // "-")
-    + " / 사유: "
-    + (
-        $result.typosquatting.reason
-        // $result.aiSummary
-        // $result.silentPatch.patchSummary
-        // $empty_message
-      )
-  ' response.txt
-}
-
-print_priority_results_by_level() {
+print_risk_results_by_level() {
   local risk_level="$1"
   local title="$2"
 
@@ -188,7 +146,7 @@ print_priority_results_by_level() {
   fi
 
   echo ""
-  echo "[$title]"
+  echo "$title"
 
   jq -r --arg risk_level "$risk_level" '
     def display_name($file; $result):
@@ -198,72 +156,19 @@ print_priority_results_by_level() {
         $result.name
       end;
 
-    .fileResults[]? as $file |
-    $file.results[]? |
-    select(.riskLevel == $risk_level) |
-    . as $result |
-    "- [" + $file.path + "] "
-    + display_name($file; $result) + "@" + ($result.version // "-") + "\n"
-    + "  - source: " + ($result.source // "-") + "\n"
-    + "  - reason: "
-    + (
-        if $result.source == "SILENT_PATCH" then
-          "Silent Patch 의심 항목입니다. 상세 내용은 Silent Patch 탐지 결과를 확인하세요."
-        else
-          $result.typosquatting.reason
-          // $result.aiSummary
-          // (
-            if $result.source == "GITHUB_ADVISORY" then
-              "GitHub Advisory 취약점이 발견되었습니다."
-            elif $result.source == "UNRESOLVED_VERSION" then
-              "정확한 버전이 아니어서 취약점 범위 비교가 제한됩니다."
-            elif $result.source == "ADVISORY_UNAVAILABLE" then
-              "GitHub Advisory 조회에 실패했습니다."
-            else
-              "위험 항목이 발견되었습니다."
-            end
-          )
-        end
-      )
-  ' response.txt
-}
-
-print_priority_results() {
-  print_section "우선 조치 필요 항목"
-
-  local risk_count
-  risk_count=$(jq '
-    [.fileResults[]?.results[]? | select(.riskLevel == "CRITICAL" or .riskLevel == "WARNING")] | length
-  ' response.txt)
-
-  if [ "$risk_count" -eq 0 ]; then
-    echo "- 없음"
-    return
-  fi
-
-  print_priority_results_by_level "CRITICAL" "CRITICAL"
-  print_priority_results_by_level "WARNING" "WARNING"
-}
-
-print_silent_patch_results() {
-  print_section "5. Silent Patch 탐지 결과"
-
-  local count
-  count=$(jq '
-    [.fileResults[]?.results[]? | select(.source == "SILENT_PATCH")] | length
-  ' response.txt)
-
-  if [ "$count" -eq 0 ]; then
-    echo "- 없음"
-    return
-  fi
-
-  jq -r '
-    def display_name($file; $result):
-      if $file.ecosystem == "maven" and ($result.name | contains(":")) then
-        ($result.name | split(":")[1])
+    def source_label:
+      if . == "TYPOSQUATTING" then
+        "타이포스쿼팅"
+      elif . == "UNRESOLVED_VERSION" then
+        "버전 확인 불가"
+      elif . == "ADVISORY_UNAVAILABLE" then
+        "GitHub Advisory 조회 실패"
+      elif . == "GITHUB_ADVISORY" then
+        "GitHub Advisory"
+      elif . == "SILENT_PATCH" then
+        "Silent Patch"
       else
-        $result.name
+        .
       end;
 
     def clean_summary_items:
@@ -279,20 +184,94 @@ print_silent_patch_results() {
           | if startswith("[") then . else "[" + . end
         );
 
+    def fallback_reason:
+      if .source == "GITHUB_ADVISORY" then
+        "GitHub Advisory 취약점이 발견되었습니다."
+      elif .source == "UNRESOLVED_VERSION" then
+        "정확한 버전이 아니어서 취약점 범위 비교가 제한됩니다."
+      elif .source == "ADVISORY_UNAVAILABLE" then
+        "GitHub Advisory 조회에 실패했습니다."
+      elif .source == "SILENT_PATCH" then
+        "Silent Patch 의심 항목입니다."
+      else
+        "위험 항목이 발견되었습니다."
+      end;
+
     .fileResults[]? as $file |
     $file.results[]? |
-    select(.source == "SILENT_PATCH") |
+    select(.riskLevel == $risk_level) |
     . as $result |
-    ($result.silentPatch.patchSummary // $result.aiSummary // "Silent Patch 의심 항목입니다.") as $summary |
-    "- [" + $file.path + "] " + display_name($file; $result) + "@" + ($result.version // "-") + "\n"
+    "- [" + $file.path + "] "
+    + display_name($file; $result) + "@" + ($result.version // "-") + "\n"
     + "  - riskLevel: " + ($result.riskLevel // "-") + "\n"
-    + "  - 사유:\n"
+    + "  - 탐지 유형: " + (($result.source // "-") | source_label) + "\n"
     + (
-        $summary
-        | clean_summary_items
-        | map("    - " + .)
-        | join("\n")
+        if $result.source == "SILENT_PATCH" then
+          ($result.silentPatch.patchSummary // $result.aiSummary // "Silent Patch 의심 항목입니다.") as $summary |
+          "  - 사유:\n"
+          + (
+              $summary
+              | clean_summary_items
+              | map("    - " + .)
+              | join("\n")
+            )
+        else
+          "  - 사유: "
+          + (
+              $result.typosquatting.reason
+              // $result.aiSummary
+              // ($result | fallback_reason)
+            )
+        end
       )
+  ' response.txt
+}
+
+print_risk_results() {
+  print_section "위험 항목 상세"
+
+  local risk_count
+  risk_count=$(jq '
+    [.fileResults[]?.results[]? | select(.riskLevel == "CRITICAL" or .riskLevel == "WARNING")] | length
+  ' response.txt)
+
+  if [ "$risk_count" -eq 0 ]; then
+    echo "- 없음"
+    return
+  fi
+
+  print_risk_results_by_level "CRITICAL" "CRITICAL 항목"
+  print_risk_results_by_level "WARNING" "WARNING 항목"
+}
+
+print_safe_results() {
+  print_section "SAFE 결과"
+
+  local count
+  count=$(jq '
+    [.fileResults[]?.results[]? | select(.source == "SAFE")] | length
+  ' response.txt)
+
+  if [ "$count" -eq 0 ]; then
+    echo "- 없음"
+    return
+  fi
+
+  jq -r '
+    def display_name($file; $result):
+      if $file.ecosystem == "maven" and ($result.name | contains(":")) then
+        ($result.name | split(":")[1])
+      else
+        $result.name
+      end;
+
+    .fileResults[]? as $file |
+    $file.results[]? |
+    select(.source == "SAFE") |
+    . as $result |
+    "- [" + $file.path + "] "
+    + display_name($file; $result) + "@" + ($result.version // "-")
+    + " / 안전한 항목입니다."
   ' response.txt
 }
 
@@ -386,7 +365,7 @@ else
   echo "- 최종 판정: RISK_FOUND"
 fi
 
-print_priority_results
+print_risk_results
 
 print_section "검사 대상 파일"
 jq -r '
@@ -410,12 +389,7 @@ else
   echo "- 없음"
 fi
 
-print_results "1. 타이포스쿼팅 탐지 결과" "TYPOSQUATTING" "타이포스쿼팅 의심 항목입니다."
-print_results "2. 버전 확인 불가 결과" "UNRESOLVED_VERSION" "정확한 버전 비교가 제한됩니다."
-print_results "3. GitHub Advisory 조회 실패 결과" "ADVISORY_UNAVAILABLE" "GitHub Advisory 조회에 실패했습니다."
-print_results "4. GitHub Advisory 탐지 결과" "GITHUB_ADVISORY" "GitHub Advisory 취약점이 발견되었습니다."
-print_silent_patch_results
-print_results "6. SAFE 결과" "SAFE" "안전한 항목입니다."
+print_safe_results
 
 print_section "최종 배포 옵션 판정"
 echo "- 위험 항목 발견 시 배포 진행 여부: $DEPLOY_ON_RISK"
