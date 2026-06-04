@@ -195,6 +195,36 @@ print_risk_results_by_level() {
         "위험 항목이 발견되었습니다."
       end;
 
+    def representative_cves:
+      [.vulnerabilities[]? | .cveId // empty | select(. != "")]
+      | unique
+      | .[:3]
+      | if length > 0 then join(", ") else "-" end;
+
+    def advisory_severity_summary:
+      (.vulnerabilities // []) as $vulnerabilities |
+      ["CRITICAL", "HIGH", "MEDIUM", "LOW", "UNKNOWN"]
+      | map(
+          . as $severity |
+          (
+            $vulnerabilities
+            | map((.severity // "UNKNOWN") | ascii_upcase)
+            | map(select(. == $severity))
+            | length
+          ) as $count |
+          select($count > 0) |
+          $severity + " " + ($count | tostring) + "개"
+        )
+      | if length > 0 then join(", ") else "-" end;
+
+    def advisory_policy:
+      (.vulnerabilities // [] | map((.severity // "") | ascii_upcase)) as $severities |
+      if any($severities[]; . == "CRITICAL" or . == "HIGH") then
+        "HIGH/CRITICAL 등급 취약점이 포함되어 CRITICAL로 분류"
+      else
+        "HIGH/CRITICAL 등급 취약점은 없어 WARNING으로 분류"
+      end;
+
     .fileResults[]? as $file |
     $file.results[]? |
     select(.riskLevel == $risk_level) |
@@ -213,6 +243,17 @@ print_risk_results_by_level() {
               | map("    - " + .)
               | join("\n")
             )
+        elif $result.source == "GITHUB_ADVISORY" then
+          "  - 사유: "
+          + (
+              $result.aiSummary
+              // ($result | fallback_reason)
+            )
+          + "\n"
+          + "  - 취약점 수: " + (($result.vulnerabilities // []) | length | tostring) + "개\n"
+          + "  - 대표 CVE: " + ($result | representative_cves) + "\n"
+          + "  - Advisory 심각도: " + ($result | advisory_severity_summary) + "\n"
+          + "  - 판정 기준: " + ($result | advisory_policy)
         else
           "  - 사유: "
           + (
