@@ -217,6 +217,7 @@ PatchBurger Action은 기본 API 주소를 내장하고 있어 사용자가 work
 - uses: Security-Academe-7-FiveGuys/PatchBurger@v1.0.0
 ```
 
+
 ## 테스트 시나리오
 
 주요 검증 시나리오는 [TEST_SCENARIOS.md](./TEST_SCENARIOS.md)에 정리되어 있습니다.
